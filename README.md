@@ -6,7 +6,7 @@ These tokens can then be turned into a tree, representing the structure and oper
 Works with numbers, simple mathematical operators (+, -, *, / etc) and trigonometric functions (sine, cosine, tangent etc).
 
 #### Current WIPs:
-- Invert operators and signs of numbers and symbols if they are in parentheses with a minus sign before it, e.g. `-(3+3)`
+- Invert operators and signs of numbers and symbols if they are in parentheses with a minus sign before it, e.g. `-(3+3) -> (-3-3)` 
 - Evaluate expressions without symbols
 
 #### Planned for the future:
