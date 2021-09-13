@@ -1,5 +1,6 @@
 # MathEval
 
+WIP.
 A lexer and parser for mathematical expressions.
 Currently able to read text from the terminal and divide it into tokens.
 These tokens can then be turned into a tree, representing the structure and operator priorities in the entered mathematical expressions.
