@@ -4,6 +4,14 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
+
+/**
+ * Lexer 
+ *
+ * @author Vincent Samuel Kröger
+ * @version 1.3
+ */
+
 public class MathLexer {
 	
 	LinkedList<Token> tokenList;
@@ -12,7 +20,7 @@ public class MathLexer {
 		tokenList = new LinkedList<Token>();	
 	}
 	
-	public void tokenize(LinkedList<Character> inputList) {
+	public void tokenize(LinkedList<Character> inputList) throws IllegalStateException {
 		LinkedList<Character> usedList = new LinkedList<Character>();
 		
 		while(!inputList.isEmpty()) {
@@ -56,9 +64,11 @@ public class MathLexer {
 			throw new IllegalStateException("Ungültige Klammerung");
 		} else {
 			adjustBracketPriority();
-			repairTokenList();
+			repairMultiplication();
 			inOperatorDepth();
 			removeBrackets();
+			removeMultiplePlusMinus();
+			fixFirstSign();
 		}
 	}
 	
@@ -68,7 +78,7 @@ public class MathLexer {
 	 * 
 	 * @return The list given to this method with the characters which are part of the found number removed.
 	 */
-	private LinkedList<Character> pollNumbers(LinkedList<Character> inputList) {
+	private LinkedList<Character> pollNumbers(LinkedList<Character> inputList) throws IllegalStateException {
 		LinkedList<Character> usedList = new LinkedList<Character>();
 		String[] number = {"", ""};
 		boolean decimals = false;
@@ -169,7 +179,7 @@ public class MathLexer {
 	 * Iterates through the token list saved in this MathLexer-instance,
 	 * placing for example multiplication-operators between consecutive symbol tokens.
 	 */
-	private void repairTokenList() {
+	private void repairMultiplication() {
 		ListIterator<Token> iterator = this.tokenList.listIterator();
 		Token next;
 		if(iterator.hasNext()) {
@@ -193,9 +203,88 @@ public class MathLexer {
 					|| (last instanceof NumberToken && next instanceof BracketToken && ((BracketToken) next).getValue() == "(")) {
 				iterator.previous();
 				iterator.add(new BinaryOperatorToken("*"));
+				iterator.previous();
+				((BinaryOperatorToken) iterator.next()).changePriority(20);
 				iterator.next();
 			}
 		}
+	}
+	
+	/**
+	 * Checks if the first Token is a BinaryOperatorToken, making it the first Number or Symobl's sign if it is a plus or minus.
+	 * Throws an Error if the first Operator is anything but a plus or minus.
+	 */
+	private void fixFirstSign() throws IllegalStateException {
+		if(this.tokenList.size()>1) {
+			Token first = this.tokenList.get(0);
+			Token second = this.tokenList.get(1);
+			if(first instanceof BinaryOperatorToken && (second instanceof NumberToken || second instanceof SymbolToken)) {
+				if(first.getValue().equals("-")) {
+					this.tokenList.remove(0);
+					((SignedToken) second).invertSign();
+				} else if(first.getValue().equals("+")) {
+					this.tokenList.remove(0);
+				} else {
+					throw new IllegalStateException("Erstes Zeichen vor Symbol oder Zahl kann kein anderer Operator als + oder - sein.");
+				}
+			}
+		} else {
+			return;
+		}
+	}
+	
+	/**
+	 * Iterates through the token list saved in this MathLexer-instance,
+	 * fixing occurrences of multiple BinaryOperators following each other.
+	 */
+	private void removeMultiplePlusMinus() throws IllegalStateException {
+		int j;
+		for (int i = 0; i < this.tokenList.size() - 1; i++) {
+			j = i + 1;
+			Token tokenAtI = this.tokenList.get(i);
+			Token tokenAtJ = this.tokenList.get(j);
+            if(tokenAtI instanceof BinaryOperatorToken && tokenAtJ instanceof BinaryOperatorToken) {
+            	int iPrio = ((BinaryOperatorToken) tokenAtI).getPriority();
+            	int iInOp = ((BinaryOperatorToken) tokenAtI).getInOperator();
+            	if(tokenAtI.getValue().equals("-") && tokenAtJ.getValue().equals("-")) {
+            		this.tokenList.remove(i);
+                	this.tokenList.remove(i);
+                	this.tokenList.add(i, new BinaryOperatorToken("+", iPrio, iInOp));
+                	i--;
+            	} else if((tokenAtI.getValue().equals("+") && tokenAtJ.getValue().equals("-"))
+            			|| (tokenAtI.getValue().equals("-") && tokenAtJ.getValue().equals("+"))) {
+            		this.tokenList.remove(i);
+                	this.tokenList.remove(i);
+                	this.tokenList.add(i, new BinaryOperatorToken("-", iPrio, iInOp));
+                	i--;
+            	} else if(tokenAtI.getValue().equals("+") && tokenAtJ.getValue().equals("+")) {
+            		this.tokenList.remove(j);
+                	i--;
+            	} else if(tokenAtI.getValue().equals("*") && tokenAtJ.getValue().equals("+")) {
+            		this.tokenList.remove(j);
+                	i--;
+            	}else if(tokenAtI.getValue().equals("*") && tokenAtJ.getValue().equals("-")) {
+            		Token nextToken = this.tokenList.get(j + 1);
+            		if(nextToken instanceof NumberToken) {
+            			((NumberToken) nextToken).setNegative(true);
+            			this.tokenList.remove(j);
+                    	i--;
+            		} else if(nextToken.getValue().equals("-")){
+            			this.tokenList.remove(j);
+                    	this.tokenList.remove(j);
+                    	this.tokenList.add(j, new BinaryOperatorToken("+", iPrio, iInOp));
+                    	i--;
+            		} else if(nextToken.getValue().equals("+")){
+            			this.tokenList.remove(j + 1);
+                    	i--;
+            		}
+            		
+            	} else {
+            		throw new IllegalStateException("Can't have multiple binary operators after each other, except + and -.");
+            	}
+            	
+            }
+        }
 	}
 	
 	/**
@@ -232,7 +321,8 @@ public class MathLexer {
 	/**
 	 * Searches for operator names in a given string.
 	 * 
-	 * @param value String to be searched for operator names.
+	 * @param value	String to be searched for operator names.
+	 * 
 	 * @return An array containing the index of the found operator name and its length
 	 * 			or {-1, 0} if no operator is found.
 	 */

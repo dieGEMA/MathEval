@@ -1,8 +1,7 @@
 package lexer;
 
-public class NumberToken extends Token {
+public class NumberToken extends SignedToken {
 	
-	boolean negative;
 	String decimals;
 	
 	public NumberToken(boolean negative, String content, String decimals) {
@@ -14,5 +13,4 @@ public class NumberToken extends Token {
 	public String toString() {
 		return String.format("%-20s%s", this.getClass().getSimpleName().replaceFirst(".....$",""), (this.negative?"-":"") + this.content + this.decimals);
 	}
-	
 }

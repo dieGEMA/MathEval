@@ -7,13 +7,24 @@ public class BinaryOperatorToken extends Token {
 	
 	public BinaryOperatorToken(String content) {
 		super(content);
+		this.priority = findPriority(content);
+	}
+	
+	public BinaryOperatorToken(String content, int priority, int inOperator) {
+		super(content);
+		this.priority = findPriority(content);
+		this.setPriority(priority);
+		this.setInOperator(inOperator);
+	}
+	
+	private int findPriority(String content) {
 		switch(content) {
-		case "^": this.priority = 3; break;
-		case "*": this.priority = 2; break;
-		case "/": this.priority = 2; break;
-		case "+": this.priority = 1; break;
-		case "-": this.priority = 1; break;
-		default: this.priority = Integer.MAX_VALUE;
+		case "^": return 3;
+		case "*": return 2;
+		case "/": return 2;
+		case "+": return 1;
+		case "-": return 1;
+		default: return Integer.MAX_VALUE;
 		}
 	}
 	

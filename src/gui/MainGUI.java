@@ -12,7 +12,7 @@ import tree.ExpressionTreeNode;
  * A lexer and parser for mathematical expressions.
  *
  * @author Vincent Samuel Kroeger
- * @version 1.0
+ * @version 1.3
  */
 public class MainGUI {
 	

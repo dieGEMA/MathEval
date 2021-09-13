@@ -6,17 +6,32 @@ import lexer.*;
 import java.util.LinkedList;
 
 /**
- * Baumstrukturen für die Darstellung mathematischer Ausdrücke.
+ * Tree structures used to represent and evaluate mathematical expressions.
  *
  * @author Vincent Samuel Kröger
- * @version 1.0
+ * @version 1.3
  */
 public class ExpressionTreeTools<T> {
 	
+	/**
+	 * Creates an ExpressionTree from a given list of tokens.
+	 * 
+	 * @param tokenList A LinkedList holding instances of classes inheriting from the class Token.
+	 * 
+	 * @return An ExpressionTree build from the list of tokens.
+	 */
 	public static ExpressionTreeNode<Token> buildExpressionTree(LinkedList<Token> tokenList) {
 		return buildExpressionTreeInternal(tokenList, null);
 	}
 	
+	/**
+	 * Creates an ExpressionTree from a given list of tokens.
+	 * 
+	 * @param tokenList	A LinkedList holding instances of classes inheriting from the class Token.
+	 * @param parent 	The ExpressionTreeNode to be set as the new tree's parent node.
+	 * 
+	 * @return An ExpressionTree build from the list of tokens.
+	 */
 	private static ExpressionTreeNode<Token> buildExpressionTreeInternal(LinkedList<Token> tokenList, ExpressionTreeNode<Token> parent) {	
 		int lowestPriorityIndex = findLowestPriorityIndex(tokenList);
 		if(lowestPriorityIndex != -1) {
@@ -54,6 +69,14 @@ public class ExpressionTreeTools<T> {
 		
 	}
 	
+	/**
+	 * Find's the BinaryOperatorToken with the lowest priority.
+	 * 
+	 * @param tokenList	A LinkedList holding instances of classes inheriting from the class Token.
+	 * 
+	 * @return The index of the BinaryOperatorToken with the lowest priority.
+	 * 			Returns the last index if multiple Tokens have the same priority.
+	 */
 	private static int findLowestPriorityIndex(LinkedList<Token> tokenList) {
 		ListIterator<Token> iter = tokenList.listIterator(tokenList.size());
 		int highest = Integer.MAX_VALUE;
@@ -72,6 +95,16 @@ public class ExpressionTreeTools<T> {
 		return highestIndex;
 	}
 	
+	/**
+	 * Searches for the offset from the last OperatorToken to the closing parentheses.
+	 * First Token in the given list of Tokens should be the Token after the OperatorToken
+	 
+	 * 
+	 * @param tokenList	A LinkedList holding instances of classes inheriting from the class Token.
+	 * 
+	 * @return The offset.
+	 * 		    Returns -1 if no closing parentheses exists for this OperatorToken.
+	 */
 	private static int findClosingParenthesesOffset(LinkedList<Token> tokenList) {
 		if(tokenList.isEmpty()) {
 			return -1;
@@ -94,6 +127,13 @@ public class ExpressionTreeTools<T> {
 		}
 	}
 	
+	/**
+	 * Post-order traversal of the given tree.
+	 * 
+	 * @param root	The root of the ExpressionTree to be traversed.
+	 * 
+	 * @return A string representation of the post-order traversal.
+	 */
 	public static String postOrderTraverse(ExpressionTreeNode<Token> root) {
 		if(root == null) {
 			return "";
@@ -101,6 +141,13 @@ public class ExpressionTreeTools<T> {
 		return postOrderTraverse(root.getLeftChild()) + postOrderTraverse(root.getRightChild()) + root.getContent().getValue();
 	}
 	
+	/**
+	 * In-order traversal of the given tree.
+	 * 
+	 * @param root	The root of the ExpressionTree to be traversed.
+	 * 
+	 * @return A string representation of the in-order traversal.
+	 */
 	public static String inOrderTraverse(ExpressionTreeNode<Token> root) {
 		if(root == null) {
 			return "";
