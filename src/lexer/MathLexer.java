@@ -66,11 +66,19 @@ public class MathLexer {
 			adjustBracketPriority();
 			repairMultiplication();
 			inOperatorDepth();
-			removeBrackets();
 			removeMultiplePlusMinus();
 			fixFirstSign();
+			invertInParentheses();
+			removeBrackets();
 		}
 	}
+	
+	/**
+	 * Iterates through the token list saved in this MathLexer-instance,
+	 * changing the signs of numbers, symbols and operators when they are
+	 * contained in parentheses preceded by a minus.
+	 */
+	private void invertInParentheses() {}
 	
 	/**
 	 * Iterates through a list of characters, in which the first character should be a digit,
@@ -84,7 +92,7 @@ public class MathLexer {
 		boolean decimals = false;
 		usedList.add(inputList.peek());
 		number[0] += inputList.poll();
-		while(Character.isDigit(inputList.peek()) || inputList.peek().equals('.')) {
+		while(!inputList.isEmpty() && (Character.isDigit(inputList.peek()) || inputList.peek().equals('.'))) {
 			if(inputList.peek().equals('.') && !decimals) {
 				decimals = true;
 			} else if (inputList.peek().equals('.') && decimals) {
@@ -200,7 +208,11 @@ public class MathLexer {
 					|| (last instanceof NumberToken && next instanceof SymbolToken)
 					|| (last instanceof NumberToken && next instanceof OperatorToken)
 					|| (last instanceof SymbolToken && next instanceof BracketToken && ((BracketToken) next).getValue() == "(")
-					|| (last instanceof NumberToken && next instanceof BracketToken && ((BracketToken) next).getValue() == "(")) {
+					|| (last instanceof NumberToken && next instanceof BracketToken && ((BracketToken) next).getValue() == "(")
+					|| (last instanceof BracketToken
+							&& ((BracketToken) last).getValue() == ")"
+							&& next instanceof BracketToken
+							&& ((BracketToken) next).getValue() == "(")) {
 				iterator.previous();
 				iterator.add(new BinaryOperatorToken("*"));
 				iterator.previous();
@@ -218,10 +230,28 @@ public class MathLexer {
 		if(this.tokenList.size()>1) {
 			Token first = this.tokenList.get(0);
 			Token second = this.tokenList.get(1);
-			if(first instanceof BinaryOperatorToken && (second instanceof NumberToken || second instanceof SymbolToken)) {
+			if(first instanceof BinaryOperatorToken
+					&& (second instanceof NumberToken
+					|| second instanceof SymbolToken
+					|| second instanceof OperatorToken)) {
 				if(first.getValue().equals("-")) {
 					this.tokenList.remove(0);
 					((SignedToken) second).invertSign();
+				} else if(first.getValue().equals("+")) {
+					this.tokenList.remove(0);
+				} else {
+					throw new IllegalStateException("Erstes Zeichen vor Symbol oder Zahl kann kein anderer Operator als + oder - sein.");
+				}
+			} else if(first instanceof BinaryOperatorToken && second instanceof BracketToken) {
+				if(first.getValue().equals("-")) {
+					this.tokenList.remove(0);
+					ListIterator<Token> iter = this.tokenList.listIterator();
+					while(iter.hasNext()) {
+						Token next = iter.next();
+						if(next instanceof OperatorToken || next instanceof NumberToken || next instanceof SymbolToken) {
+							((SignedToken) next).invertSign();
+						}
+					}
 				} else if(first.getValue().equals("+")) {
 					this.tokenList.remove(0);
 				} else {
@@ -265,7 +295,9 @@ public class MathLexer {
                 	i--;
             	}else if(tokenAtI.getValue().equals("*") && tokenAtJ.getValue().equals("-")) {
             		Token nextToken = this.tokenList.get(j + 1);
-            		if(nextToken instanceof NumberToken) {
+            		if(nextToken instanceof NumberToken
+            				|| nextToken instanceof OperatorToken 
+            				|| nextToken instanceof SymbolToken) {
             			((NumberToken) nextToken).setNegative(true);
             			this.tokenList.remove(j);
                     	i--;
@@ -287,6 +319,7 @@ public class MathLexer {
         }
 	}
 	
+
 	/**
 	 * Iterates through the token list saved in this MathLexer-instance,
 	 * removing all brackets.
