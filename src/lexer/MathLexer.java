@@ -66,9 +66,9 @@ public class MathLexer {
 			adjustBracketPriority();
 			repairMultiplication();
 			inOperatorDepth();
+			invertInSignedParentheses();
 			removeMultiplePlusMinus();
 			fixFirstSign();
-			invertInParentheses();
 			removeBrackets();
 		}
 	}
@@ -138,10 +138,33 @@ public class MathLexer {
 	}
 	
 	/**
+	 * 
+	 */
+	private void invertInSignedParentheses() {
+		ListIterator<Token> iterator = this.tokenList.listIterator();
+		int depth = 0;
+		while(iterator.hasNext()) {
+			Token next = iterator.next();
+			if(!iterator.hasNext()) {
+				return;
+			} else {
+				Token after = iterator.next();
+			}
+			
+			if(next.getValue().equals("-") && next.getValue().equals("(")) {
+				depth++;
+			} else if (next.getValue().equals(")")) {
+				
+			}
+			
+		}
+	}
+	
+	/**
 	 * Iterates through the token list saved in this MathLexer-instance,
 	 * incrementing the priority of operators by 10 per "level of parentheses".
 	 */
-	public void adjustBracketPriority() {
+	private void adjustBracketPriority() {
 		int bonus = 0;
 		Iterator<Token> iterator = this.tokenList.iterator();
 		while(iterator.hasNext()) {
