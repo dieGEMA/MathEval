@@ -17,4 +17,8 @@ public abstract class SignedToken extends Token {
 		this.negative = negative;
 	}
 	
+	public boolean getNegative() {
+		return this.negative;
+	}
+	
 }

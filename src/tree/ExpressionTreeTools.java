@@ -155,4 +155,50 @@ public class ExpressionTreeTools<T> {
 		return inOrderTraverse(root.getLeftChild()) + root.getContent().getValue()  + inOrderTraverse(root.getRightChild());
 	}
 	
+	/**
+	 * Recursive evaluation of ExpressionTrees
+	 * @param root The root of the ExpressionTree to be evaluated
+	 * @return The expressions value
+	 */
+	public static Double evaluate(ExpressionTreeNode<Token> root) {
+		if(root == null) {
+			return 0d;
+		} else if(root.getContent() instanceof NumberToken) {
+			return ((NumberToken) root.getContent()).toDouble();
+		} else if(root.getContent() instanceof BinaryOperatorToken) {
+			switch(root.getContent().getValue()) {
+			case("-"): return evaluate(root.getLeftChild()) - evaluate(root.getRightChild());
+			case("+"): return evaluate(root.getLeftChild()) + evaluate(root.getRightChild());
+			case("*"): return evaluate(root.getLeftChild()) * evaluate(root.getRightChild());
+			case("/"): return evaluate(root.getLeftChild()) / evaluate(root.getRightChild());
+			case("%"): return evaluate(root.getLeftChild()) % evaluate(root.getRightChild()); 
+			case("^"): return Math.pow(evaluate(root.getLeftChild()), evaluate(root.getRightChild())); 
+			default: return 0d;
+			}
+		} else if(root.getContent() instanceof OperatorToken) {
+			Double returnValue;
+			switch(root.getContent().getValue()) {
+			//TO-DO: Add missing operators
+			case("sin"): returnValue = Math.sin(evaluate(root.getRightChild())); break;
+			case("cos"): returnValue = Math.cos(evaluate(root.getRightChild())); break;
+			case("tan"): returnValue =  Math.tan(evaluate(root.getRightChild())); break;
+			case("sinh"): returnValue =  Math.sinh(evaluate(root.getRightChild())); break;
+			case("cosh"): returnValue =  Math.cosh(evaluate(root.getRightChild())); break;
+			case("tanh"): returnValue =  Math.tanh(evaluate(root.getRightChild())); break;
+			case("arcsin"): returnValue =  Math.asin(evaluate(root.getRightChild())); break;
+			case("arccos"): returnValue =  Math.acos(evaluate(root.getRightChild())); break;
+			case("arctan"): returnValue =  Math.atan(evaluate(root.getRightChild())); break;
+			case("sqrt"): returnValue =  Math.sqrt(evaluate(root.getRightChild())); break;
+			default: returnValue =  0d;
+			}
+			if(((OperatorToken) root.getContent()).getNegative()) {
+				return -returnValue;
+			} else {
+				return returnValue;
+			}
+		} else {
+			return 0d;
+		}
+	}
+	
 }

@@ -36,5 +36,6 @@ public class MainGUI {
 		lexer.tokenize(inputList);
 		ExpressionTreeNode<Token> test = ExpressionTreeTools.buildExpressionTree(lexer.getTokenList());
 		System.out.print(test.toString());
+		System.out.println(ExpressionTreeTools.evaluate(test));
 	}
 }

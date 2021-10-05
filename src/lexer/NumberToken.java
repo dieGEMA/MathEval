@@ -13,4 +13,8 @@ public class NumberToken extends SignedToken {
 	public String toString() {
 		return String.format("%-20s%s", this.getClass().getSimpleName().replaceFirst(".....$",""), (this.negative?"-":"") + this.content + this.decimals);
 	}
+	
+	public Double toDouble() {
+		return Double.parseDouble((this.negative? "-":"") + this.content + this.decimals);
+	}
 }
